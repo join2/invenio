@@ -25,7 +25,12 @@ CFG_REMOTE_DEBUGGER_ENABLED = 0 # by default, we don't want to enable debugger
 try:
     from invenio.config import CFG_DEVEL_SITE
     if CFG_DEVEL_SITE:
-        CFG_REMOTE_DEBUGGER_ENABLED = 1
+    # If CFG_REMOTE_DEBUGGER_ENABLED is set in the config, we will use that
+    # This prevents errors in Docker when we test, but do not want to debug
+        try:
+            from invenio.config import CFG_REMOTE_DEBUGGER_ENABLED
+        except ImportError:
+           CFG_REMOTE_DEBUGGER_ENABLED = 1
 except ImportError:
     pass
 
