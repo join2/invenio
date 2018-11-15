@@ -571,7 +571,7 @@ def translate_to_ascii(values):
     @rtype: sequence
     """
     if not values:
-        return values
+        return ['']
     if type(values) == str:
         values = [values]
     for index, value in enumerate(values):

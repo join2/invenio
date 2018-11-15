@@ -86,8 +86,8 @@ elif CFG_INSPIRE_SITE:
     CFG_JOURNAL_PUBINFO_STANDARD_FORM = "773__p,773__v,773__c"
     CFG_JOURNAL_PUBINFO_STANDARD_FORM_REGEXP_CHECK = r'^\w.*,\w.*,\w.*$'
 else:
-    CFG_JOURNAL_TAG = '909C4%'
-    CFG_JOURNAL_PUBINFO_STANDARD_FORM = "909C4p 909C4v (909C4y) 909C4c"
+    CFG_JOURNAL_TAG = '773__%'
+    CFG_JOURNAL_PUBINFO_STANDARD_FORM = "773__t 773__v (773__y) 773__p"
     CFG_JOURNAL_PUBINFO_STANDARD_FORM_REGEXP_CHECK = r'^\w.*\s\w.*\s\(\d+\)\s\w.*$'
 
 ## precompile some often-used regexp for speed reasons:
@@ -1004,6 +1004,13 @@ class WordTable:
         """Add records from RECID1 to RECID2."""
         wlist = {}
         self.recIDs_in_mem.append([recID1, recID2])
+        if self.index_name in ('per'):
+            for recID in range(recID1, recID2 + 1):
+                if not wlist.has_key(recID):
+                    wlist[recID] = []
+                from invenio.libMiniAuthoritySearch import get_other_names_for_recid
+                wlist[recID] = list_union(get_other_names_for_recid(recID),
+                                          wlist[recID])
         # special case of author indexes where we also add author
         # canonical IDs:
         if self.index_name in ('author', 'firstauthor', 'exactauthor', 'exactfirstauthor'):

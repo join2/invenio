@@ -98,7 +98,7 @@ _TASK_PARAMS = {
 _OPTIONS = {}
 
 # Which tasks don't need to ask the user for authorization?
-CFG_VALID_PROCESSES_NO_AUTH_NEEDED = ("bibupload", )
+CFG_VALID_PROCESSES_NO_AUTH_NEEDED = ("bibupload","webcoll", )
 CFG_TASK_IS_NOT_A_DEAMON = ("bibupload", )
 
 def fix_argv_paths(paths, argv=None):

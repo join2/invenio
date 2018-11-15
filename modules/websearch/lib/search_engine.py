@@ -105,7 +105,7 @@ from invenio.intbitset import intbitset
 from invenio.dbquery import DatabaseError, deserialize_via_marshal, InvenioDbQueryWildcardLimitError
 from invenio.access_control_engine import acc_authorize_action
 from invenio.errorlib import register_exception
-from invenio.textutils import encode_for_xml, wash_for_utf8, strip_accents
+from invenio.textutils import encode_for_xml, wash_for_utf8, strip_accents, translate_to_ascii
 from invenio.htmlutils import get_mathjax_header
 from invenio.htmlutils import nmtoken_from_string
 
@@ -1927,7 +1927,7 @@ def search_pattern(req=None, p=None, f=None, m=None, ap=0, of="id", verbose=0, l
         bsu_o, bsu_p, bsu_f, bsu_m = basic_search_units[idx_unit]
         if bsu_f and len(bsu_f) < 2:
             if of.startswith("h"):
-                write_warning(_("There is no index %s.  Searching for %s in all fields." % (bsu_f, bsu_p)), req=req)
+		write_warning(_("There is no index %s.  Searching for %s in all fields." % (cgi.escape(repr(bsu_f)), cgi.escape(repr(bsu_p)))), req=req)
             bsu_f = ''
             bsu_m = 'w'
             if of.startswith("h") and verbose:
@@ -3858,7 +3858,7 @@ def sort_records_bibxxx(req, recIDs, tags, sort_field='', sort_order='d', sort_p
             else:
                 # no sort pattern defined, so join them all together
                 val = string.join(vals)
-            val = strip_accents(val.lower()) # sort values regardless of accents and case
+            val = translate_to_ascii(val).pop().lower() # sort values regardless of accents and case
             if recIDs_dict.has_key(val):
                 recIDs_dict[val].append(recID)
             else:
@@ -4277,6 +4277,8 @@ def print_records_prologue(req, format, cc=None):
         prologue = websearch_templates.tmpl_xml_nlm_prologue()
     elif format.startswith('xw'):
         prologue = websearch_templates.tmpl_xml_refworks_prologue()
+    elif format.startswith('xf'):
+        prologue = websearch_templates.tmpl_xml_rdf_prologue()
     elif format.startswith('xr'):
         prologue = websearch_templates.tmpl_xml_rss_prologue(cc=cc)
     elif format.startswith('xe8x'):
@@ -4303,6 +4305,8 @@ def print_records_epilogue(req, format):
         epilogue = websearch_templates.tmpl_xml_nlm_epilogue()
     elif format.startswith('xw'):
         epilogue = websearch_templates.tmpl_xml_refworks_epilogue()
+    elif format.startswith('xf'):
+        epilogue = websearch_templates.tmpl_xml_rdf_epilogue()
     elif format.startswith('xr'):
         epilogue = websearch_templates.tmpl_xml_rss_epilogue()
     elif format.startswith('xe8x'):

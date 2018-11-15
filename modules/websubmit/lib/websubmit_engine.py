@@ -583,7 +583,10 @@ def interface(req,
             fieldhtml.append(text)
         else:
             select.append(0)
-            radio.append(0)
+            if re.search(r"TYPE=[\"']?radio", field_instance[4], re.IGNORECASE) is not None:
+                radio.append(1)
+            else:
+                radio.append(0)
             upload.append(0)
             # field.append(value) - initial version, not working with JS, taking a submitted value
             field.append(field_instance[3])

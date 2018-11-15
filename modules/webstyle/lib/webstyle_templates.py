@@ -327,6 +327,12 @@ template function generated it.
         else:
             pageheadertitle = headertitle + ' - ' + sitename
 
+        # privacy link for cookie banner
+        try:
+            from invenio.config import CFG_SITE_PRIVACY
+            privacy = CFG_SITE_PRIVACY
+        except ImportError:
+            privacy = 'http://aboutcookies.org/'
 
         out = """\
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
@@ -335,10 +341,8 @@ template function generated it.
 <head>
  <title>%(pageheadertitle)s</title>
  <link rev="made" href="mailto:%(sitesupportemail)s" />
- <link rel="stylesheet" href="%(cssurl)s/img/invenio%(cssskin)s.css" type="text/css" />
- <!--[if lt IE 8]>
-    <link rel="stylesheet" type="text/css" href="%(cssurl)s/img/invenio%(cssskin)s-ie7.css" />
- <![endif]-->
+ <link rel="stylesheet" href="/img/invenio%(cssskin)s.css" type="text/css" />
+ <link rel="stylesheet" href="/img/jquery.dataTables.min.css" type="text/css">
  <!--[if gt IE 8]>
     <style type="text/css">div.restrictedflag {filter:none;}</style>
  <![endif]-->
@@ -350,10 +354,21 @@ template function generated it.
  <meta name="description" content="%(description)s" />
  <meta name="keywords" content="%(keywords)s" />
  <script type="text/javascript" src="%(cssurl)s/js/jquery.min.js"></script>
+ <script type="text/javascript" src="%(cssurl)s/js/jquery/jquery.dataTables.min.js"></script>
+ <script type="text/javascript" id="cookiebanner"
+   src="%(cssurl)s/js/cookiebanner.min.js"
+   data-message="We use cookies to improve your experience."
+   data-linkmsg="More information"
+   data-cookie="cookiebanner"
+   data-moreinfo="%(privacy)s">
+ </script> 
  %(metaheaderadd)s
 </head>
 <body%(body_css_classes)s lang="%(ln_iso_639_a)s"%(rtl_direction)s>
 <div class="pageheader">
+<noscript><p class="nojs">
+Your browser does not support JavaScript or JavaScript is disabled in the settings. &nbsp; - &nbsp; As this site requires some JavaScript, please make sure to enable it.
+</p></noscript>
 %(inspect_templates_message)s
 <!-- replaced page header -->
 <div class="headerlogo">
@@ -453,7 +468,8 @@ template function generated it.
           'msg_personalize' : _("Personalize"),
           'msg_help' : _("Help"),
           'unAPIurl' : cgi.escape('%s/unapi' % CFG_SITE_URL),
-          'inspect_templates_message' : inspect_templates_message
+          'inspect_templates_message' : inspect_templates_message,
+          'privacy' : privacy
         }
         return out
 
@@ -494,11 +510,11 @@ template function generated it.
  <div class="pagefooterstripeleft">
   %(sitename)s&nbsp;::&nbsp;<a class="footer" href="%(siteurl)s/?ln=%(ln)s">%(msg_search)s</a>&nbsp;::&nbsp;<a class="footer" href="%(siteurl)s/submit?ln=%(ln)s">%(msg_submit)s</a>&nbsp;::&nbsp;<a class="footer" href="%(sitesecureurl)s/youraccount/display?ln=%(ln)s">%(msg_personalize)s</a>&nbsp;::&nbsp;<a class="footer" href="%(siteurl)s/help/%(langlink)s">%(msg_help)s</a>
   <br />
-  %(msg_poweredby)s <a class="footer" href="http://invenio-software.org/">Invenio</a> v%(version)s
+  %(msg_poweredby)s <a class="footer" href="http://invenio-software.org/">Invenio</a> %(version)s %(join2_version)s
   <br />
   %(msg_maintainedby)s <a class="footer" href="mailto:%(sitesupportemail)s">%(sitesupportemail)s</a>
   <br />
-  %(msg_lastupdated)s
+  %(msg_lastupdated)s %(impressum)s %(privacy)s
  </div>
  <div class="pagefooterstriperight">
   %(languagebox)s
@@ -523,10 +539,13 @@ template function generated it.
 
           'msg_poweredby': _("Powered by"),
           'msg_maintainedby': _("Maintained by"),
+          'join2_version': self.give_join2_version(),
+          'impressum': self.give_impressum(),
+          'privacy': self.give_privacy(),
 
           'msg_lastupdated': msg_lastupdated,
           'languagebox': self.tmpl_language_selection_box(req, ln),
-          'version': CFG_VERSION,
+          'version': self.give_invenio_version(),
 
           'pagefooteradd': pagefooteradd,
         }
@@ -978,3 +997,59 @@ URI: http://%(host)s%(page)s
             out += '%s: ' % type
         out += '%s</span>%s' % (msg, epilogue)
         return out
+
+    def give_invenio_version(self):
+        """
+        Gives the Invenio Tag written in invenio_version file
+        """
+
+        from invenio.config import CFG_WEBDIR
+        version_file = CFG_WEBDIR + '/img/invenio_version'
+        try:
+            version = open(version_file, 'r')
+            invenio = version.read().split('\n')[0]
+        except:
+            invenio = CFG_VERSION
+        return invenio
+
+    def give_join2_version(self):
+        """
+        Gives the string of Join2 Release version link
+        """
+
+        from invenio.config import CFG_WEBDIR
+        version_file = CFG_WEBDIR + '/img/invenio_version'
+        try:
+            version = open(version_file, 'r')
+            join2 = version.read().split('\n')[1]
+            join2 = ' | ' + '<a class="footer" href="http://join2.de">' + join2 + '</a>'
+        except:
+            join2 = ''
+        return join2
+
+    def give_impressum(self):
+        """
+        Gives the impressum link for CFG_SITE_IMPRESSUM
+        """
+        try:
+            from invenio.config import CFG_SITE_IMPRESSUM
+            impressum = '<br /> ' + '<a class="impressum" href="' + CFG_SITE_IMPRESSUM + '">Impressum</a>'
+        except:
+            impressum = ''
+        return impressum
+
+    def give_privacy(self):
+        """
+        Gives the privacy link for CFG_SITE_PRIVACY
+        """
+        try:
+            from invenio.config import CFG_SITE_PRIVACY
+            if len(self.give_impressum()) > 0:
+                privacy = ' | ' + '<a class="privacy" href="' + CFG_SITE_PRIVACY + '">Data Privacy Policy</a>'
+            else:
+                privacy = '<br /> ' + '<a class="privacy" href="' + CFG_SITE_PRIVACY + '">Data Privacy Policy</a>'
+        except:
+            privacy = ''
+        return privacy
+
+

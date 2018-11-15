@@ -884,8 +884,7 @@ class Template:
           <tr valign="baseline">
            <td class="searchboxbody" colspan="3" align="right">
              <small>
-               <a href="%(siteurl)s/help/search-tips%(langlink)s">%(msg_search_tips)s</a> ::
-               %(asearch)s
+               <a href="%(siteurl)s/help/search-tips%(langlink)s">%(msg_search_tips)s</a>
              </small>
            </td>
           </tr>
@@ -996,8 +995,7 @@ class Template:
           <tr valign="bottom">
             <td colspan="3" class="searchboxbody" align="right">
               <small>
-                <a href="%(siteurl)s/help/search-tips%(langlink)s">%(msg_search_tips)s</a> ::
-                %(ssearch)s
+                <a href="%(siteurl)s/help/search-tips%(langlink)s">%(msg_search_tips)s</a>
               </small>
             </td>
           </tr>
@@ -2115,8 +2113,7 @@ class Template:
               <tr valign="bottom">
                 <td colspan="3" align="right" class="searchboxbody">
                   <small>
-                    <a href="%(siteurl)s/help/search-tips%(langlink)s">%(search_tips)s</a> ::
-                    %(advanced_search)s
+                    <a href="%(siteurl)s/help/search-tips%(langlink)s">%(search_tips)s</a>
                   </small>
                 </td>
               </tr>
@@ -2174,7 +2171,6 @@ class Template:
                 <td class="searchboxbody" align="left" rowspan="2" valign="top">
                   <small><small>
                   <a href="%(siteurl)s/help/search-tips%(langlink)s">%(search_tips)s</a><br/>
-                  %(advanced_search)s
                 </td>
               </tr>
             </table>
@@ -3608,6 +3604,29 @@ class Template:
     def tmpl_xml_mods_epilogue(self):
         """Creates XML MODS epilogue."""
         out = """\n</modsCollection>"""
+        return out
+
+    def tmpl_xml_rdf_prologue(self):
+        """Creates XML RDF prologue."""
+        out = """<rdf:RDF xmlns="http://www.w3.org/2002/07/owl#"
+                      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                      xmlns:terms="http://purl.org/dc/terms/"
+                      xmlns:owl="http://www.w3.org/2002/07/owl#"
+                      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+                      xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+                      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+                      xmlns:dc="http://purl.org/dc/elements/1.1/"
+                      xmlns:radar="https://purl.org/radar/1.0/"
+                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                      xml:base="http://www.w3.org/2002/07/owl">
+                     <Class rdf:about="%(site)s/collection/Grants">
+                         <rdfs:label>Grants</rdfs:label>
+                     </Class>\n""" % {'site': CFG_SITE_URL}
+        return out
+
+    def tmpl_xml_rdf_epilogue(self):
+        """Creates XML RDF epilogue."""
+        out = """\n</rdf:RDF>"""
         return out
 
     def tmpl_xml_default_prologue(self):

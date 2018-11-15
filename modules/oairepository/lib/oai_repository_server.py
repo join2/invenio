@@ -654,7 +654,7 @@ def filter_out_based_on_date_range(recids, fromdate="", untildate=""):
         recids &= intbitset(run_sql("SELECT id FROM bibrec WHERE modification_date >= %s", (fromdate, )))
     elif untildate:
         recids &= intbitset(run_sql("SELECT id FROM bibrec WHERE modification_date <= %s", (untildate, )))
-    return recids - get_all_restricted_recids()
+    return recids # - get_all_restricted_recids()
 
 def oai_get_recid_list(set_spec="", fromdate="", untildate=""):
     """

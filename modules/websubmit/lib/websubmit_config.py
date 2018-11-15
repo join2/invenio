@@ -35,7 +35,7 @@ CFG_WEBSUBMIT_COPY_MAILS_TO_ADMIN = 0
 ## programmatically submitting a form , or else users will be asked
 ## confirmation after each submission step.
 ## (0 == NO; 1 == YES)
-CFG_WEBSUBMIT_CHECK_USER_LEAVES_SUBMISSION = 0
+CFG_WEBSUBMIT_CHECK_USER_LEAVES_SUBMISSION = 1
 
 ## List of keywords/format parameters that should not write by default
 ## corresponding files in submission directory (`curdir').  Some other

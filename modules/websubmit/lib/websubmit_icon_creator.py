@@ -53,7 +53,7 @@ from invenio.websubmit_config import InvenioWebSubmitIconCreatorError
 
 CFG_ALLOWED_FILE_EXTENSIONS = ["pdf", "gif", "jpg", \
                                "jpeg", "ps", "png", "bmp", \
-                               "eps", "epsi", "epsf"]
+                               "eps", "epsi", "epsf", "tif", "tiff"]
 
 
 ## ***** Functions related to the icon creation process: *****

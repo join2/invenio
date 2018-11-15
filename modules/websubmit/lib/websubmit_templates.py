@@ -162,9 +162,9 @@ class Template:
 
         # load the right message language
         _ = gettext_set_language(ln)
-
+        catalog_classname = cgi.escape(catalog['name']).replace("(","_").replace(")","_").replace("/","_").replace(" ","_")
         if catalog['level'] == 1:
-            out = "<li><font size=\"+1\"><strong>%s</strong></font>\n" % catalog['name']
+            out = "<li class=\"%s\"><font size=\"+1\"><strong>%s</strong></font>\n" % (catalog_classname,catalog['name'])
         else:
             if catalog['level'] == 2:
                 out = "<li>%s\n" % cgi.escape(catalog['name'])
@@ -206,7 +206,7 @@ class Template:
         # load the right message language
         _ = gettext_set_language(ln)
 
-        return """<li>%s</li>""" % create_html_link('%s/submit' % CFG_SITE_URL, {'doctype' : doc['id'], 'ln' : ln}, doc['name'])
+        return """<li class=\"%s\">%s</li>""" % ("SBI" + doc['id'],create_html_link('%s/submit/direct' % CFG_SITE_URL, {'sub' : "SBI" + doc['id'], 'ln' : ln}, doc['name']))
 
     def tmpl_action_page(self, ln, uid, pid, now, doctype,
                          description, docfulldesc, snameCateg,
@@ -696,18 +696,12 @@ class Template:
                               }
                 elif radio[i] != 0:
                     # If the field is a radio buttonset
-                    out += """var check=0;
-                              for (var j = 0; j < el.length; j++) {
-                                if (el.options[j].checked){
-                                  check++;
-                                }
-                              }
-                              if (check == 0) {
-                                alert("%(press_button)s");
-                                return 0;
-                              }""" % {
-                                'press_button':_("Please press a button.")
-                              }
+                    out += """
+                              var v =  $("input[name='%s']:checked").val();
+                              if (v === undefined) {
+                              alert("The field %s is mandatory. Please fill it in.");
+                              return 0;
+                              }""" % (field[i],txt[i])
                 else:
                     # If the field is a text input
                     out += """if (el.value == '') {
@@ -1298,11 +1292,17 @@ class Template:
                 reference = submission['reference']
                 if not submission['pending']:
                     # record was integrated, so propose link:
+                    #KOM DESY: Since record might not be public yet, include USER collection,
+                    # but also search in UNRESTRICTED
                     reference = create_html_link('%s/search' % CFG_SITE_URL, {
                         'ln' : ln,
                         'p' : submission['reference'],
-                        'f' : 'reportnumber'
+                        'f' : 'reportnumber',
+                        'c' : 'UNRESTRICTED'
                         }, submission['reference'])
+                    # We can not have two c's in create_html_link, and create_html_link encodes arguments,
+                    # so we patch here
+                    reference = reference.replace("&amp;c=UNRESTRICTED","&amp;c=USER&amp;c=UNRESTRICTED")
             else:
                 reference = """<font color="red">%s</font>""" % _("Reference not yet given")
 

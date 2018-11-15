@@ -79,15 +79,13 @@ def perform_borrower_loans(uid, barcode, borrower_id,
 
     @return body(html)
     """
+    from invenio.libSIP_join2 import renew
 
     infos = []
 
     is_borrower = db.is_borrower(db.get_invenio_user_email(uid))
     loans = db.get_borrower_loans(is_borrower)
     requests = db.get_borrower_requests(is_borrower)
-
-    tmp_date = datetime.date.today() + datetime.timedelta(days=30)
-    new_due_date = get_datetext(tmp_date.year, tmp_date.month, tmp_date.day)
 
     #renew loan
     if barcode:
@@ -99,7 +97,7 @@ def perform_borrower_loans(uid, barcode, borrower_id,
                          "<strong>" + book_title_from_MARC(recid) + "</strong>. Another user " \
                          "is waiting for this book.")
         else:
-            db.update_due_date(barcode, new_due_date)
+            renew(None, barcode)
             infos.append("Your loan has been renewed with sucess.")
 
     #cancel request
@@ -109,20 +107,25 @@ def perform_borrower_loans(uid, barcode, borrower_id,
 
     #renew all loans
     elif borrower_id:
-        list_of_recids = db.get_borrower_recids(borrower_id)
-        for (recid) in list_of_recids:
-            queue = db.get_queue_request(recid[0])
+        success = 0
+        for loan in loans:
+            queue = db.get_queue_request(loan[0])
 
             #check if there are requests
             if len(queue) != 0:
                 infos.append("It is not possible to renew your loan for " \
-                             "<strong>" + book_title_from_MARC(recid) + "</strong>. Another user" \
+                             "<strong>" + book_title_from_MARC(loan[0]) + "</strong>. Another user" \
                              " is waiting for this book.")
             else:
-                db.update_due_date_borrower(borrower_id,
-                                            new_due_date)
-        infos.append("All loans have been renewed with success.")
+                success += 1
+                renew(None, loan[1])
+        if success == len(loans):
+            infos.append("All loans have been renewed with success.")
+        else:
+            infos.append("%i of your %i loans have been renewed." %
+                        (success, len(loans)))
 
+    loans = db.get_borrower_loans(is_borrower)
     body = bibcirculation_templates.tmpl_yourloans(loans=loans,
                                                    requests=requests,
                                                    borrower_id=is_borrower,

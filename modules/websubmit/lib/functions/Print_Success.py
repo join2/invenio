@@ -18,6 +18,8 @@
 __revision__ = "$Id$"
 
 import os
+import urllib
+import simplejson as json
 
 from invenio.config import CFG_SITE_NAME
 from invenio.websubmit_functions.Shared_Functions import get_nice_bibsched_related_message, txt2html
@@ -65,6 +67,28 @@ def Print_Success(parameters, curdir, form, user_info=None):
         t=t+Request_Print("A",  "An email has been sent to the referee. You will be warned by email as soon as the referee takes his/her decision regarding your document.<br /><br />\n")
     if status == "ADDED":
         t=t+Request_Print("A",  "It will soon appear on our server.<br /><br />\n")
+    try:
+        from invenio.config import CFG_WEBSUBMIT_HINT_RESEARCH_DATA, CFG_SITE_SECURE_URL
+        pn = os.path.join(curdir, 'hgf_record')
+        frec = open(pn, "r")
+        record = json.load(frec, 'utf8')
+        frec.close
+        addpars = ""
+        try:
+            addpars += "&author=" + urllib.quote(record['1001_'][0]['a'].encode('utf8'))
+        except:
+            pass
+        try:
+            addpars += "&title=" + urllib.quote(record['245__'][0]['a'].encode('utf8'))
+        except:
+            pass 
+        try:
+            addpars += "&year=" + urllib.quote(record['260__'][0]['c'].encode('utf8'))
+        except:
+            pass 
+        t=t+Request_Print("A",  CFG_WEBSUBMIT_HINT_RESEARCH_DATA.format(sitename=CFG_SITE_NAME,secsiteurl=CFG_SITE_SECURE_URL,pubid=rn,addpars=addpars))
+    except ImportError:
+        pass
     t=t+Request_Print("A",  "Thank you for using %s!" % CFG_SITE_NAME)
     t=t+Request_Print("A",  "<br /><br /><br /><br />")
     t += txt2html(get_nice_bibsched_related_message(curdir))
